@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   getDb, 
   saveDb, 
@@ -8,7 +8,6 @@ import {
   createModule, 
   updateModule, 
   createLecture, 
-  updateLecture, 
   updateTestimonialStatus, 
   addTestimonial 
 } from '../db';
@@ -551,7 +550,7 @@ export default function AdminDashboard() {
                           <input 
                             type="text" 
                             id="class-lang" 
-                            placeholder="e.g. English" 
+                            placeholder="e.g. Data Analytics" 
                             required
                             value={classroomForm.language}
                             onChange={(e) => setClassroomForm({ ...classroomForm, language: e.target.value })}
@@ -657,7 +656,7 @@ export default function AdminDashboard() {
                         <input 
                           type="text" 
                           id="mod-title" 
-                          placeholder="e.g. Resume and Placement Preparation" 
+                          placeholder="e.g. SQL Analytics Foundation" 
                           required
                           value={moduleForm.title}
                           onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
@@ -732,7 +731,7 @@ export default function AdminDashboard() {
                           <input 
                             type="text" 
                             id="mod-tags" 
-                            placeholder="e.g. Resume, Placement, Career" 
+                            placeholder="e.g. SQL, Python, Machine Learning" 
                             value={moduleForm.tags}
                             onChange={(e) => setModuleForm({ ...moduleForm, tags: e.target.value })}
                           />

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getDb, updateInstructorProfile, updateLecture, updateModule } from '../db';
+import { useState, useEffect } from 'react';
+import { getDb, updateInstructorProfile, updateLecture } from '../db';
 import * as Icons from '../components/Icons';
 
 export default function InstructorDashboard({ instructorId }) {
@@ -13,8 +13,6 @@ export default function InstructorDashboard({ instructorId }) {
   const [profileForm, setProfileForm] = useState({ title: '', bio: '', experience: '', pricing: '', tags: '', credentials: '', linkedin: '', instagram: '', whatsapp: '' });
   const [editingLecture, setEditingLecture] = useState(null);
   const [lectureForm, setLectureForm] = useState({ description: '', agenda: '', teachingNotes: '', newResourceName: '', newResourceUrl: '' });
-  const [editingModule, setEditingModule] = useState(null);
-  const [moduleForm, setModuleForm] = useState({ shortDesc: '', longDesc: '' });
 
   // Status flags
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -22,6 +20,7 @@ export default function InstructorDashboard({ instructorId }) {
   // Load profile values on instructor change or initial load
   useEffect(() => {
     if (instructor) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfileForm({
         title: instructor.title,
         bio: instructor.bio,
@@ -34,7 +33,7 @@ export default function InstructorDashboard({ instructorId }) {
         whatsapp: instructor.social?.whatsapp || ''
       });
     }
-  }, [instructorId, db]);
+  }, [instructor, instructorId, db]);
 
   // Sync DB Helper
   const refreshDb = () => {
@@ -260,7 +259,7 @@ export default function InstructorDashboard({ instructorId }) {
                       id="inst-creds" 
                       rows="4" 
                       required
-                      placeholder="e.g. M.A. English - Delhi University"
+                      placeholder="e.g. M.Sc. Data Science - Delhi University"
                       value={profileForm.credentials}
                       onChange={(e) => setProfileForm({ ...profileForm, credentials: e.target.value })}
                     ></textarea>

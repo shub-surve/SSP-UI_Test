@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getDb, addLead } from '../db';
 import * as Icons from '../components/Icons';
 
-export default function PublicSite({ onNavigateToSection }) {
+export default function PublicSite() {
   const [db, setDb] = useState(getDb());
   const [currentView, setCurrentView] = useState({ type: 'home', id: null });
   const [interestModal, setInterestModal] = useState({ open: false, moduleId: '', instructorId: '' });
@@ -19,6 +19,8 @@ export default function PublicSite({ onNavigateToSection }) {
   // Lead registration form states
   const [leadForm, setLeadForm] = useState({ name: '', email: '', mobile: '', occupation: '' });
   const [leadSuccess, setLeadSuccess] = useState(false);
+  const [activeProblem, setActiveProblem] = useState(0);
+  const [activePath, setActivePath] = useState('analyst');
 
   // Sync DB updates
   useEffect(() => {
@@ -83,47 +85,256 @@ export default function PublicSite({ onNavigateToSection }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Problem-Solution Grid Section Component
-  const ProblemSolutionSection = () => {
+  const goHomeSection = (sectionId) => {
+    setCurrentView({ type: 'home', id: null });
+    window.setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  };
+
+  const learnerPaths = [
+    {
+      id: 'analyst',
+      label: 'Data Analyst',
+      outcome: 'SQL, dashboards, and business insight reports',
+      moduleSlug: 'sql-analytics-foundation',
+      bestFor: 'Beginners who want an analytics role',
+      proof: 'Start with SQL, then create a stakeholder-ready dashboard.',
+      steps: ['SQL Analytics Foundation', 'Power BI Dashboard Lab', 'EDA Capstone']
+    },
+    {
+      id: 'scientist',
+      label: 'ML Portfolio',
+      outcome: 'Python, statistics, model evaluation, and projects',
+      moduleSlug: 'machine-learning-portfolio',
+      bestFor: 'Learners with Python basics',
+      proof: 'Build model notebooks that show clear metrics and tradeoffs.',
+      steps: ['Python Statistics Bootcamp', 'ML Portfolio Sprint', 'Model review']
+    },
+    {
+      id: 'career',
+      label: 'Project Proof',
+      outcome: 'A clear capstone story recruiters can inspect',
+      moduleSlug: 'eda-storytelling-capstone',
+      bestFor: 'Students who need portfolio evidence',
+      proof: 'Turn a raw dataset into a polished, decision-focused case study.',
+      steps: ['EDA Planning', 'Visual Evidence', 'Portfolio Story']
+    }
+  ];
+
+  const activeLearnerPath = learnerPaths.find(path => path.id === activePath) || learnerPaths[0];
+
+  const renderTrustStrip = () => (
+    <section className="trust-strip" aria-label="Why learners trust SSPlive">
+      <div className="trust-item">
+        <strong>No payment wall</strong>
+        <span>See course details before registering interest.</span>
+      </div>
+      <div className="trust-item">
+        <strong>Mentor-reviewed work</strong>
+        <span>Live feedback on notebooks, dashboards, and projects.</span>
+      </div>
+      <div className="trust-item">
+        <strong>Limited review seats</strong>
+        <span>Capacity is capped so feedback stays personal.</span>
+      </div>
+      <div className="trust-item">
+        <strong>Free roadmap</strong>
+        <span>Register once to get a Data Science path checklist.</span>
+      </div>
+    </section>
+  );
+
+  const renderPathfinderSection = () => (
+    <section className="pathfinder-section" id="tracks">
+      <div className="container pathfinder-layout">
+        <div className="pathfinder-copy">
+          <span className="accent-label">START WITH THE RIGHT TRACK</span>
+          <h2>Choose a goal. See the course path instantly.</h2>
+          <p>
+            Most learners do not need a giant bundle. Pick the outcome you want, then start with the smallest live course that proves progress.
+          </p>
+          <div className="psychology-cues">
+            <span><Icons.CheckCircle size={15} /> Small first step</span>
+            <span><Icons.CheckCircle size={15} /> Visible outcome</span>
+            <span><Icons.CheckCircle size={15} /> Real mentor authority</span>
+          </div>
+        </div>
+
+        <div className="pathfinder-panel">
+          <div className="path-tabs" role="tablist" aria-label="Choose your Data Science goal">
+            {learnerPaths.map(path => (
+              <button
+                type="button"
+                key={path.id}
+                className={`path-tab ${activePath === path.id ? 'active' : ''}`}
+                onClick={() => setActivePath(path.id)}
+                role="tab"
+                aria-selected={activePath === path.id}
+              >
+                {path.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="path-result">
+            <div className="path-result-header">
+              <span>Recommended path</span>
+              <strong>{activeLearnerPath.label}</strong>
+            </div>
+            <h3>{activeLearnerPath.outcome}</h3>
+            <p>{activeLearnerPath.proof}</p>
+            <div className="path-steps">
+              {activeLearnerPath.steps.map((step, idx) => (
+                <div className="path-step" key={step}>
+                  <span>{idx + 1}</span>
+                  <p>{step}</p>
+                </div>
+              ))}
+            </div>
+            <div className="path-actions">
+              <button className="btn btn-primary" onClick={() => navigateTo('masterclass', activeLearnerPath.moduleSlug)}>
+                View Starting Course <Icons.ChevronRight className="icon-after" />
+              </button>
+              <button className="btn btn-secondary" onClick={() => openRegisterModal()}>
+                Get Roadmap
+              </button>
+            </div>
+            <p className="microcopy">Best for: {activeLearnerPath.bestFor}. No credit card required.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  const renderLearningFlowSection = () => (
+    <section className="learning-flow-section" id="process">
+      <div className="container">
+        <div className="section-header center">
+          <span className="accent-label">HOW LEARNING WORKS</span>
+          <h2>A simple route from interest to portfolio proof</h2>
+          <p className="subtitle">The flow is designed to reduce hesitation: understand the fit, join a live lab, build evidence, and get feedback.</p>
+        </div>
+        <div className="flow-grid">
+          {[
+            ['01', 'Pick a track', 'Choose Analyst, ML Portfolio, or Project Proof based on your goal.'],
+            ['02', 'Join live labs', 'Attend guided sessions with datasets, notebooks, and dashboard exercises.'],
+            ['03', 'Get review', 'Mentors review your logic, metrics, visuals, and project story.'],
+            ['04', 'Show your work', 'Leave with outputs you can discuss in interviews or academic reviews.']
+          ].map(([num, title, text]) => (
+            <div className="flow-item" key={title}>
+              <span>{num}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+
+  // Problem-Solution Interactive Section
+  const renderProblemSolutionSection = () => {
     const comparisons = [
       {
-        problem: "Dry, text-heavy courses taught by faceless, unverified instructors.",
-        solution: "Elite, expert-led portfolios highlighting credentials, videos, and student recommendations.",
-        badge: "Instructors First"
+        problem: "Students watch long videos but still cannot build a real project.",
+        solution: "Every Data Science module is built around live labs, datasets, notebooks, and reviewable outputs.",
+        badge: "Project-first",
+        metric: "2 portfolio artifacts",
+        proof: ["Live notebook walkthroughs", "Dataset-based assignments", "Mentor project critique"]
       },
       {
-        problem: "High upfront payments for bulky multi-month packages when you only need one skill.",
-        solution: "Bite-sized, module-by-module learning scopes that target exact development needs.",
-        badge: "Modular Academic Unit"
+        problem: "Generic courses mix SQL, Python, ML, and dashboards without a clear learning path.",
+        solution: "Focused skill tracks let learners choose the exact Data Science capability they need next.",
+        badge: "Modular path",
+        metric: "4 focused tracks",
+        proof: ["SQL analytics", "Python statistics", "Power BI", "Machine learning"]
       },
       {
-        problem: "Disconnected pre-recorded videos that fail to adapt or resolve questions.",
-        solution: "Live interactive classrooms and Q&A combined with hands-on practice worksheets.",
-        badge: "Live-Hybrid Focus"
+        problem: "Learners get stuck on errors, metrics, and messy data with nobody to debug with.",
+        solution: "Live mentor checkpoints convert mistakes into teachable moments before frustration builds.",
+        badge: "Guided debugging",
+        metric: "Live Q&A in every lab",
+        proof: ["Query reviews", "Model diagnostics", "Dashboard feedback"]
       },
       {
-        problem: "Complex mandatory sign-ups and high-pressure sales calls just to view a syllabus.",
-        solution: "Zero-friction public exploration, enabling interest registration in under 30 seconds.",
-        badge: "Zero-Friction"
+        problem: "Syllabi hide the real work, so students do not know what they will actually create.",
+        solution: "Transparent course pages show outcomes, sessions, resources, mentors, and project value.",
+        badge: "Transparent syllabus",
+        metric: "30-sec interest flow",
+        proof: ["Public schedules", "Visible learning outcomes", "No payment wall"]
       }
     ];
+    const activeItem = comparisons[activeProblem];
 
     return (
       <section className="problem-solution-section">
         <div className="section-header center">
-          <span className="accent-label">THE SSPLIVE DIFFERENCE</span>
-          <h2>Traditional LMS vs. Next-Gen Learning</h2>
-          <p className="subtitle">Why traditional online courses fail students, and how our student-first architecture changes the game.</p>
+          <span className="accent-label">FIXING DATA SCIENCE LEARNING</span>
+          <h2>Problems students actually face</h2>
+          <p className="subtitle">Tap a challenge to see how the live Data Science classroom turns confusion into usable skills.</p>
         </div>
         
-        <div className="comparison-grid">
+        <div className="problem-lab">
+          <div className="problem-tabs" role="tablist" aria-label="Data Science learning problems">
+            {comparisons.map((item, idx) => (
+              <button
+                type="button"
+                className={`problem-tab ${activeProblem === idx ? 'active' : ''}`}
+                key={item.badge}
+                onClick={() => setActiveProblem(idx)}
+                role="tab"
+                aria-selected={activeProblem === idx}
+              >
+                <span className="tab-index">0{idx + 1}</span>
+                <span>{item.badge}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="problem-focus-card">
+            <div className="focus-topline">
+              <span className="card-badge">{activeItem.badge}</span>
+              <strong>{activeItem.metric}</strong>
+            </div>
+            <div className="comparison-split featured">
+              <div className="side problem-side">
+                <div className="side-header">
+                  <span className="bullet problem-bullet">x</span>
+                  <h4>The Problem</h4>
+                </div>
+                <p>{activeItem.problem}</p>
+              </div>
+              <div className="side-arrow">
+                <Icons.ChevronRight className="arrow-icon" />
+              </div>
+              <div className="side solution-side">
+                <div className="side-header">
+                  <span className="bullet solution-bullet">ok</span>
+                  <h4>SSPlive Solution</h4>
+                </div>
+                <p>{activeItem.solution}</p>
+              </div>
+            </div>
+            <div className="proof-grid">
+              {activeItem.proof.map((proofItem) => (
+                <span key={proofItem}>
+                  <Icons.CheckCircle size={16} />
+                  {proofItem}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="comparison-grid compact">
           {comparisons.map((item, idx) => (
-            <div className="comparison-card" key={idx}>
+            <button className="comparison-card" key={item.badge} onClick={() => setActiveProblem(idx)} type="button">
               <div className="card-badge">{item.badge}</div>
               <div className="comparison-split">
                 <div className="side problem-side">
                   <div className="side-header">
-                    <span className="bullet problem-bullet">✕</span>
+                    <span className="bullet problem-bullet">x</span>
                     <h4>The Problem</h4>
                   </div>
                   <p>{item.problem}</p>
@@ -133,13 +344,13 @@ export default function PublicSite({ onNavigateToSection }) {
                 </div>
                 <div className="side solution-side">
                   <div className="side-header">
-                    <span className="bullet solution-bullet">✓</span>
+                    <span className="bullet solution-bullet">ok</span>
                     <h4>SSPlive Solution</h4>
                   </div>
                   <p>{item.solution}</p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -163,23 +374,29 @@ export default function PublicSite({ onNavigateToSection }) {
             >
               Home
             </button>
+            <button
+              className="nav-link"
+              onClick={() => goHomeSection('tracks')}
+            >
+              Tracks
+            </button>
             <button 
               className={`nav-link ${currentView.type === 'masterclasses' ? 'active' : ''}`}
               onClick={() => navigateTo('masterclasses')}
             >
-              Masterclasses
+              Courses
             </button>
             <button 
               className={`nav-link ${currentView.type === 'instructors' ? 'active' : ''}`}
               onClick={() => navigateTo('instructors')}
             >
-              Instructors
+              Mentors
             </button>
           </nav>
 
           <div className="header-actions">
             <button className="btn btn-primary" onClick={() => openRegisterModal()}>
-              Register Interest
+              Get Roadmap
             </button>
           </div>
         </div>
@@ -198,32 +415,32 @@ export default function PublicSite({ onNavigateToSection }) {
                 <div className="hero-content">
                   <div className="hero-badge">
                     <span className="pulse-dot"></span>
-                    Now Enrolling Live Masterclasses for June 2026
+                    June 2026 live cohorts now open
                   </div>
-                  <h1>Master Live Skills with Elite Instructors</h1>
+                  <h1>Learn Data Science by building real projects live</h1>
                   <p className="hero-lead">
-                    Discover specialized modular learning experiences taught in live interactive classrooms. Say goodbye to dry, pre-recorded video bundles. Focus on what you need, when you need it.
+                    Pick a clear track, join mentor-led labs, and create SQL, Python, dashboard, and machine learning work you can actually show.
                   </p>
                   <div className="hero-ctas">
-                    <button className="btn btn-primary btn-lg" onClick={() => navigateTo('masterclasses')}>
-                      Explore Masterclasses <Icons.ChevronRight className="icon-after" />
+                    <button className="btn btn-primary btn-lg" onClick={() => goHomeSection('tracks')}>
+                      Find My Track <Icons.ChevronRight className="icon-after" />
                     </button>
                     <button className="btn btn-secondary btn-lg" onClick={() => navigateTo('instructors')}>
-                      Meet Our Instructors
+                      Meet Mentors
                     </button>
                   </div>
                   <div className="hero-stats">
                     <div className="stat-item">
-                      <h3>10+</h3>
-                      <p>Expert Instructors</p>
+                      <h3>5</h3>
+                      <p>Focused Courses</p>
                     </div>
                     <div className="stat-item">
                       <h3>15+</h3>
-                      <p>Modular Programs</p>
+                      <p>Live Lab Sessions</p>
                     </div>
                     <div className="stat-item">
                       <h3>100%</h3>
-                      <p>Live-Interactive</p>
+                      <p>Portfolio Focused</p>
                     </div>
                   </div>
                 </div>
@@ -231,47 +448,53 @@ export default function PublicSite({ onNavigateToSection }) {
                 <div className="hero-image-pane">
                   <div className="glass-card hero-widget">
                     <div className="widget-header">
-                      <span className="live-pill">LIVE NOW</span>
-                      <span className="widget-title">Interview confidence</span>
+                      <span className="live-pill">MENTOR REVIEW</span>
+                      <span className="widget-title">Your next lab</span>
                     </div>
                     <div className="widget-teacher">
                       <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=100&h=100" alt="Dr. Ananya" />
                       <div>
                         <h5>Dr. Ananya Rao</h5>
-                        <p>Placement & Interview Strategy</p>
+                        <p>ML Projects & Model Review</p>
                       </div>
                     </div>
                     <div className="widget-agenda">
                       <div className="agenda-item active">
                         <Icons.CheckCircle className="icon-green" />
-                        <span>The 90-sec "Tell Me About Yourself" Pitch</span>
+                        <span>Build a baseline model on a real dataset</span>
                       </div>
                       <div className="agenda-item">
                         <Icons.Clock className="icon-blue" />
-                        <span>STAR Storytelling Mock Round (7:30 PM)</span>
+                        <span>Review metrics, errors, and next steps</span>
                       </div>
                     </div>
-                    <button className="btn btn-primary btn-block" onClick={() => navigateTo('masterclass', 'interview-confidence')}>
-                      Join Classroom Queue
+                    <button className="btn btn-primary btn-block" onClick={() => navigateTo('masterclass', 'machine-learning-portfolio')}>
+                      View This Course
                     </button>
                   </div>
                 </div>
               </div>
             </section>
 
+            {renderTrustStrip()}
+
+            {renderPathfinderSection()}
+
+            {renderLearningFlowSection()}
+
             {/* Problem-Solution Grid */}
-            <ProblemSolutionSection />
+            {renderProblemSolutionSection()}
 
             {/* Featured Masterclasses */}
             <section className="featured-section bg-light">
               <div className="container">
                 <div className="section-header">
                   <div>
-                    <span className="accent-label">POPULAR MODULES</span>
-                    <h2>Featured Masterclasses</h2>
+                    <span className="accent-label">POPULAR COURSES</span>
+                    <h2>Start with one focused Data Science course</h2>
                   </div>
                   <button className="btn btn-secondary" onClick={() => navigateTo('masterclasses')}>
-                    View All Modules <Icons.ChevronRight className="icon-after" />
+                    View All Courses <Icons.ChevronRight className="icon-after" />
                   </button>
                 </div>
 
@@ -305,10 +528,10 @@ export default function PublicSite({ onNavigateToSection }) {
 
                         <div className="card-footer">
                           <button className="btn btn-secondary" onClick={() => navigateTo('masterclass', m.slug)}>
-                            Syllabus Detail
+                            Course Details
                           </button>
                           <button className="btn btn-primary" onClick={() => openRegisterModal(m.id, inst?.id)}>
-                            Register Interest
+                            Join Waitlist
                           </button>
                         </div>
                       </div>
@@ -323,11 +546,11 @@ export default function PublicSite({ onNavigateToSection }) {
               <div className="container">
                 <div className="section-header">
                   <div>
-                    <span className="accent-label">OUR EDUCATORS</span>
-                    <h2>Meet the Mentors</h2>
+                    <span className="accent-label">MENTOR AUTHORITY</span>
+                    <h2>Learn from people who review your work</h2>
                   </div>
                   <button className="btn btn-secondary" onClick={() => navigateTo('instructors')}>
-                    Browse All Mentors
+                    Browse Mentors
                   </button>
                 </div>
 
@@ -356,7 +579,7 @@ export default function PublicSite({ onNavigateToSection }) {
                             View Portfolio
                           </button>
                           <button className="btn btn-primary" onClick={() => openRegisterModal('', inst.id)}>
-                            Request Consultation
+                            Ask for Guidance
                           </button>
                         </div>
                       </div>
@@ -370,9 +593,9 @@ export default function PublicSite({ onNavigateToSection }) {
             <section className="testimonials-section bg-navy text-light">
               <div className="container">
                 <div className="section-header center">
-                  <span className="accent-label text-blue">ALUMNI VOICES</span>
-                  <h2>Real Outcomes, Real Success</h2>
-                  <p className="subtitle text-muted">What students and professionals say after participating in SSPlive cohorts.</p>
+                  <span className="accent-label text-blue">SOCIAL PROOF</span>
+                  <h2>Students trust work they can explain</h2>
+                  <p className="subtitle text-muted">Real feedback from learners who completed live Data Science labs and mentor reviews.</p>
                 </div>
 
                 <div className="testimonials-grid">
@@ -405,10 +628,10 @@ export default function PublicSite({ onNavigateToSection }) {
             {/* General Lead CTA Banner */}
             <section className="cta-banner-section">
               <div className="cta-banner-container">
-                <h2>Ready to Elevate Your Skillset?</h2>
-                <p>Register your interest today and receive a 1-on-1 placement guidance checklist plus immediate notification of our next live cohort schedule.</p>
+                <h2>Ready to Build Your Data Portfolio?</h2>
+                <p>Register your interest today and receive a Data Science learning path checklist plus immediate notification of our next live cohort schedule.</p>
                 <button className="btn btn-primary btn-lg" onClick={() => openRegisterModal()}>
-                  Get Free Placement Checklist
+                  Get Free Data Science Checklist
                 </button>
               </div>
             </section>
@@ -420,8 +643,8 @@ export default function PublicSite({ onNavigateToSection }) {
           <section className="directory-section">
             <div className="container">
               <div className="directory-header">
-                <h2>Browse Our Certified Instructors</h2>
-                <p>Search and filter to find academic guides specialized in communication, career planning, and aptitude coaching.</p>
+                <h2>Browse Data Science Mentors</h2>
+                <p>Search and filter to find mentors specialized in analytics, Python, dashboards, statistics, and machine learning.</p>
               </div>
 
               {/* Filters */}
@@ -430,7 +653,7 @@ export default function PublicSite({ onNavigateToSection }) {
                   <Icons.Search size={18} className="search-icon" />
                   <input 
                     type="text" 
-                    placeholder="Search by instructor name or credentials..." 
+                    placeholder="Search by mentor name, skill, or credentials..." 
                     value={instructorSearch} 
                     onChange={(e) => setInstructorSearch(e.target.value)}
                   />
@@ -442,10 +665,11 @@ export default function PublicSite({ onNavigateToSection }) {
                     onChange={(e) => setInstructorSubjectFilter(e.target.value)}
                   >
                     <option value="">All Subjects/Expertise</option>
-                    <option value="Spoken English">Spoken English</option>
-                    <option value="Interview Prep">Interview Preparation</option>
-                    <option value="Quantitative Aptitude">Quantitative Aptitude</option>
-                    <option value="Public Speaking">Public Speaking</option>
+                    <option value="SQL">SQL Analytics</option>
+                    <option value="Python">Python</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Power BI">Power BI</option>
+                    <option value="Statistics">Statistics</option>
                   </select>
                 </div>
               </div>
@@ -487,10 +711,10 @@ export default function PublicSite({ onNavigateToSection }) {
 
                         <div className="inst-card-actions">
                           <button className="btn btn-secondary" onClick={() => navigateTo('instructor', inst.slug)}>
-                            View Profile Portfolio
+                            View Mentor Profile
                           </button>
                           <button className="btn btn-primary" onClick={() => openRegisterModal('', inst.id)}>
-                            Register Interest
+                            Ask for Guidance
                           </button>
                         </div>
                       </div>
@@ -505,7 +729,7 @@ export default function PublicSite({ onNavigateToSection }) {
         {/* VIEW: INSTRUCTOR PORTFOLIO DETAIL */}
         {currentView.type === 'instructor' && (() => {
           const inst = activeInstructors.find(i => i.slug === currentView.id);
-          if (!inst) return <div className="container error-view">Instructor profile not found.</div>;
+          if (!inst) return <div className="container error-view">Mentor profile not found.</div>;
           
           const instModules = publishedModules.filter(m => m.assignedInstructors.includes(inst.id));
           const instTestimonials = db.testimonials.filter(t => t.instructorId === inst.id && t.status === 'approved');
@@ -514,7 +738,7 @@ export default function PublicSite({ onNavigateToSection }) {
             <section className="portfolio-section">
               <div className="container">
                 <button className="btn-back" onClick={() => navigateTo('instructors')}>
-                  ← Back to Instructor Directory
+                  ← Back to Mentor Directory
                 </button>
 
                 <div className="portfolio-grid">
@@ -532,12 +756,12 @@ export default function PublicSite({ onNavigateToSection }) {
                         </div>
                         <div>
                           <strong>{instModules.length}</strong>
-                          <span>Modules</span>
+                          <span>Courses</span>
                         </div>
                       </div>
 
                       <button className="btn btn-primary btn-block" onClick={() => openRegisterModal('', inst.id)}>
-                        Register Interest with {inst.name.split(' ')[0]}
+                        Ask {inst.name.split(' ')[0]} for Guidance
                       </button>
 
                       {/* Optional Pricing */}
@@ -598,9 +822,9 @@ export default function PublicSite({ onNavigateToSection }) {
                       </div>
                     </div>
 
-                    {/* Instructor Modules */}
+                    {/* Instructor Courses */}
                     <div className="portfolio-offerings">
-                      <h3>Live Modules Taught by {inst.name}</h3>
+                      <h3>Live Courses Taught by {inst.name}</h3>
                       <div className="offerings-grid">
                         {instModules.map(m => (
                           <div className="offering-item glass-card" key={m.id}>
@@ -612,16 +836,16 @@ export default function PublicSite({ onNavigateToSection }) {
                             <p>{m.shortDesc}</p>
                             <div className="offering-actions">
                               <button className="btn btn-secondary" onClick={() => navigateTo('masterclass', m.slug)}>
-                                Full Syllabus
+                                Course Details
                               </button>
                               <button className="btn btn-primary" onClick={() => openRegisterModal(m.id, inst.id)}>
-                                Register Interest
+                                Join Waitlist
                               </button>
                             </div>
                           </div>
                         ))}
                         {instModules.length === 0 && (
-                          <p className="no-items">No modules currently scheduled with this instructor.</p>
+                          <p className="no-items">No courses currently scheduled with this mentor.</p>
                         )}
                       </div>
                     </div>
@@ -649,13 +873,13 @@ export default function PublicSite({ onNavigateToSection }) {
           );
         })()}
 
-        {/* VIEW: MASTERCLASSES DIRECTORY */}
+        {/* VIEW: COURSE DIRECTORY */}
         {currentView.type === 'masterclasses' && (
           <section className="directory-section">
             <div className="container">
               <div className="directory-header">
-                <h2>Live Modules & Masterclasses</h2>
-                <p>Discover topic-focused modules. Review syllabus structures, timelines, and credentials without needing to pay or sign up.</p>
+                <h2>Live Data Science Courses</h2>
+                <p>Compare focused labs across SQL, Python, dashboards, statistics, and machine learning. Review outcomes, schedules, and mentors before you register interest.</p>
               </div>
 
               {/* Filters */}
@@ -676,9 +900,11 @@ export default function PublicSite({ onNavigateToSection }) {
                     onChange={(e) => setMasterclassSubjectFilter(e.target.value)}
                   >
                     <option value="">All Subjects</option>
-                    <option value="English">English / Communication</option>
-                    <option value="Placement">Interview Prep / Job Ready</option>
-                    <option value="Mathematics">Mathematics</option>
+                    <option value="SQL">SQL Analytics</option>
+                    <option value="Python">Python & Statistics</option>
+                    <option value="Power BI">Power BI Dashboards</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Portfolio">Portfolio Projects</option>
                   </select>
                 </div>
                 <div className="filter-item select">
@@ -737,10 +963,10 @@ export default function PublicSite({ onNavigateToSection }) {
 
                         <div className="card-footer">
                           <button className="btn btn-secondary" onClick={() => navigateTo('masterclass', m.slug)}>
-                            View Syllabus
+                            Course Details
                           </button>
                           <button className="btn btn-primary" onClick={() => openRegisterModal(m.id, inst?.id)}>
-                            Register Interest
+                            Join Waitlist
                           </button>
                         </div>
                       </div>
@@ -752,10 +978,10 @@ export default function PublicSite({ onNavigateToSection }) {
           </section>
         )}
 
-        {/* VIEW: MASTERCLASS MODULE DETAIL */}
+        {/* VIEW: COURSE DETAIL */}
         {currentView.type === 'masterclass' && (() => {
           const moduleObj = publishedModules.find(m => m.slug === currentView.id);
-          if (!moduleObj) return <div className="container error-view">Masterclass not found.</div>;
+          if (!moduleObj) return <div className="container error-view">Course not found.</div>;
           
           const inst = getInstructorForModule(moduleObj);
           
@@ -767,7 +993,7 @@ export default function PublicSite({ onNavigateToSection }) {
             <section className="masterclass-detail-section">
               <div className="container">
                 <button className="btn-back" onClick={() => navigateTo('masterclasses')}>
-                  ← Back to Masterclass Index
+                  ← Back to Course List
                 </button>
 
                 <div className="masterclass-detail-layout">
@@ -784,13 +1010,13 @@ export default function PublicSite({ onNavigateToSection }) {
                       
                       <div className="detail-action-buttons mobile-only">
                         <button className="btn btn-primary btn-block" onClick={() => openRegisterModal(moduleObj.id, inst?.id)}>
-                          Register Interest
+                          Join Waitlist
                         </button>
                       </div>
                     </div>
 
                     <div className="detail-about-box glass-card">
-                      <h3>Module Overview</h3>
+                      <h3>Course Overview</h3>
                       <p>{moduleObj.longDesc}</p>
                       
                       {moduleObj.prerequisites && (
@@ -818,7 +1044,7 @@ export default function PublicSite({ onNavigateToSection }) {
                     {/* Syllabus / Lecture list */}
                     <div className="syllabus-box glass-card">
                       <h3>Lecture & Session Schedule</h3>
-                      <p className="syllabus-intro">This module is composed of the following live sessions. Classroom materials (PDFs, worksheets) are locked until placement counselors approve admission.</p>
+                      <p className="syllabus-intro">This course is composed of live sessions. Classroom materials are unlocked after an advisor confirms the right cohort fit.</p>
                       
                       <div className="syllabus-timeline">
                         {moduleLectures.map((l, idx) => (
@@ -861,7 +1087,7 @@ export default function PublicSite({ onNavigateToSection }) {
                           </div>
                         ))}
                         {moduleLectures.length === 0 && (
-                          <p className="no-items">Lecture schedules for this module are currently being drafted by the instructor. Register interest to get notified once sessions go live.</p>
+                          <p className="no-items">Session schedules for this course are currently being drafted by the mentor. Join the waitlist to get notified once sessions go live.</p>
                         )}
                       </div>
                     </div>
@@ -872,14 +1098,14 @@ export default function PublicSite({ onNavigateToSection }) {
                     {/* Sticky register box */}
                     <div className="sticky-register-box glass-card">
                       <div className="register-box-header">
-                        <h3>Enrolling Now</h3>
-                        <p className="price-lead">Zero Upfront Cost (Lead Phase)</p>
+                        <h3>Waitlist Open</h3>
+                        <p className="price-lead">Free guidance call before payment</p>
                       </div>
                       
                       <ul className="perks-list">
                         <li>
                           <Icons.CheckCircle size={16} className="perk-icon" />
-                          <span>1-on-1 counselor counseling session</span>
+                          <span>1-on-1 course fit guidance</span>
                         </li>
                         <li>
                           <Icons.CheckCircle size={16} className="perk-icon" />
@@ -887,12 +1113,12 @@ export default function PublicSite({ onNavigateToSection }) {
                         </li>
                         <li>
                           <Icons.CheckCircle size={16} className="perk-icon" />
-                          <span>Exclusive study guides and PDFs</span>
+                          <span>Project worksheets and study guides</span>
                         </li>
                       </ul>
 
                       <button className="btn btn-primary btn-block btn-lg" onClick={() => openRegisterModal(moduleObj.id, inst?.id)}>
-                        Register Interest
+                        Join Waitlist
                       </button>
                       <p className="register-disclaimer">Free counseling follow-up. No credit card required.</p>
                     </div>
@@ -944,19 +1170,19 @@ export default function PublicSite({ onNavigateToSection }) {
           <div className="footer-top">
             <div className="footer-brand">
               <h3>SSPlive</h3>
-              <p>Premium multi-instructor learning discovery and delivery platform. Modernizing education through modular live cohorts.</p>
+              <p>Live Data Science courses with mentor review, practical datasets, and portfolio-focused project work.</p>
             </div>
             <div className="footer-links">
               <h4>Quick Links</h4>
               <ul>
                 <li onClick={() => navigateTo('home')}>Home</li>
-                <li onClick={() => navigateTo('masterclasses')}>Masterclasses</li>
-                <li onClick={() => navigateTo('instructors')}>Instructors</li>
+                <li onClick={() => navigateTo('masterclasses')}>Courses</li>
+                <li onClick={() => navigateTo('instructors')}>Mentors</li>
               </ul>
             </div>
             <div className="footer-admin-actions">
               <h4>Portals</h4>
-              <p>For testing, use the floating **Sandbox Switcher** bar at the top to toggle admin and contributor screens.</p>
+              <p>For testing, use the floating Sandbox Switcher bar at the top to view admin and mentor screens.</p>
             </div>
           </div>
           
@@ -984,17 +1210,17 @@ export default function PublicSite({ onNavigateToSection }) {
               </div>
             ) : (
               <form onSubmit={handleLeadSubmit}>
-                <h3>Register Interest</h3>
-                <p className="modal-intro">Join the queue for live interactive sessions. Submit your contact details below to secure first access.</p>
+                <h3>Get Your Data Science Roadmap</h3>
+                <p className="modal-intro">Tell us where to send your roadmap and cohort updates. An advisor can help you choose the right first course.</p>
                 
                 {/* Auto captured tags indicator */}
                 {(interestModal.moduleId || interestModal.instructorId) && (
                   <div className="modal-captured-tags">
-                    <span className="captured-label">Capturing Interest for:</span>
+                    <span className="captured-label">Selected interest:</span>
                     <div className="tags-flex">
                       {interestModal.moduleId && (
                         <span className="captured-tag">
-                          Module: {db.modules.find(m => m.id === interestModal.moduleId)?.title || interestModal.moduleId}
+                          Course: {db.modules.find(m => m.id === interestModal.moduleId)?.title || interestModal.moduleId}
                         </span>
                       )}
                       {interestModal.instructorId && (
@@ -1068,7 +1294,7 @@ export default function PublicSite({ onNavigateToSection }) {
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Submit & Request Guide <Icons.Send size={14} className="icon-after" />
+                    Send My Roadmap <Icons.Send size={14} className="icon-after" />
                   </button>
                 </div>
               </form>

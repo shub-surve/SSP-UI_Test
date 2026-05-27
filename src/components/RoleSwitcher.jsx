@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function RoleSwitcher({ currentRole, onChangeRole }) {
   return (
     <div className="role-switcher-banner">
@@ -31,19 +29,19 @@ export default function RoleSwitcher({ currentRole, onChangeRole }) {
                 className={`dropdown-item ${currentRole === 'instructor:priya-kapoor' ? 'active' : ''}`}
                 onClick={() => onChangeRole('instructor:priya-kapoor')}
               >
-                Priya Kapoor (Comms)
+                Priya Kapoor (Analytics)
               </button>
               <button 
                 className={`dropdown-item ${currentRole === 'instructor:ananya-rao' ? 'active' : ''}`}
                 onClick={() => onChangeRole('instructor:ananya-rao')}
               >
-                Dr. Ananya Rao (Career)
+                Dr. Ananya Rao (ML)
               </button>
               <button 
                 className={`dropdown-item ${currentRole === 'instructor:rahul-mehta' ? 'active' : ''}`}
                 onClick={() => onChangeRole('instructor:rahul-mehta')}
               >
-                Rahul Mehta (Math)
+                Rahul Mehta (Python)
               </button>
             </div>
           </div>
